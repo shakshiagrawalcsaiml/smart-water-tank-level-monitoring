@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Water Tank Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <h2>Smart Water</h2>
+
+        <nav>
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Tank</a>
+            <a href="#">Analytics</a>
+            <a href="#">Alerts</a>
+            <a href="#">Settings</a>
+        </nav>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="topbar">
+
+            <div>
+                <h1>Smart Water Tank</h1>
+                <p>IoT Water Level & Leakage Controller</p>
+            </div>
+
+            <div class="connection-status">
+                <span class="status-dot"></span>
+                Online
+            </div>
+
+        </header>
+
+
+        <!-- Statistics -->
+        <section class="stats-grid">
+
+            <div class="card">
+                <h3>Tank Level</h3>
+                <p class="value">
+                    <span id="tank-level">--</span>%
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Water Volume</h3>
+                <p class="value">
+                    <span id="water-volume">--</span> L
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Flow Rate</h3>
+                <p class="value">
+                    <span id="flow-rate">--</span> L/min
+                </p>
+            </div>
+
+            <div class="card">
+                <h3>Today's Consumption</h3>
+                <p class="value">
+                    <span id="consumption">--</span> L
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- Tank and System Status -->
+        <section class="dashboard-grid">
+
+            <!-- Tank -->
+            <div class="card">
+
+                <h2>Tank Status</h2>
+
+                <div class="tank-container">
+
+                    <div class="tank">
+
+                        <div id="water"
+                             class="water"
+                             style="height: 76%;">
+                        </div>
+
+                    </div>
+
+                    <h2>
+                        <span id="tank-percentage">76</span>%
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <!-- System Status -->
+            <div class="card">
+
+                <h2>System Status</h2>
+
+                <div class="status-row">
+                    <span>Pump</span>
+                    <strong id="pump-status">ON</strong>
+                </div>
+
+                <div class="status-row">
+                    <span>Control Mode</span>
+                    <strong id="pump-mode">AUTO</strong>
+                </div>
+
+                <div class="status-row">
+                    <span>Leakage</span>
+                    <strong id="leakage-status">NO</strong>
+                </div>
+
+                <div class="status-row">
+                    <span>Pump Runtime</span>
+                    <strong>
+                        <span id="pump-runtime">18</span> min
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Charts -->
+        <section class="charts-grid">
+
+            <div class="card">
+
+                <h2>Tank Level History</h2>
+
+                <canvas id="tankChart"></canvas>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>Water Consumption</h2>
+
+                <canvas id="consumptionChart"></canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- Alerts -->
+        <section class="card">
+
+            <h2>Recent Alerts</h2>
+
+            <div id="alerts">
+
+                <p>No active alerts.</p>
+
+            </div>
+
+        </section>
+
+
+        <footer>
+            Smart Water Tank IoT Project
+        </footer>
+
+    </main>
+
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Our JavaScript -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+
+</html>
