@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | Smart Water Tank</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .analytics-card, .chart-card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+        }
+
+        .chart-card {
+            margin-bottom: 25px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="main-content">
+
+    <header class="header">
+        <h1>Water Analytics</h1>
+        <p>Monitor water levels and consumption trends</p>
+    </header>
+
+    <section class="analytics-grid">
+
+        <div class="analytics-card">
+            <h3>Current Water Level</h3>
+            <h2 id="current-level">0%</h2>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Water Stored</h3>
+            <h2 id="current-volume">0 L</h2>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Flow Rate</h3>
+            <h2 id="current-flow">0 L/min</h2>
+        </div>
+
+        <div class="analytics-card">
+            <h3>Today's Consumption</h3>
+            <h2 id="today-consumption">0 L</h2>
+        </div>
+
+    </section>
+
+    <section class="chart-card">
+        <h3>Water Level History</h3>
+        <div class="chart-container">
+            <canvas id="levelChart"></canvas>
+        </div>
+    </section>
+
+    <section class="chart-card">
+        <h3>Water Consumption</h3>
+        <p>
+            Consumption history will appear here when historical data
+            is available.
+        </p>
+        <div class="chart-container">
+            <canvas id="consumptionChart"></canvas>
+        </div>
+    </section>
+
+    <p>
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </p>
+
+</div>
+
+<script>
+const levelLabels = [];
+const levelValues = [];
+
+const levelChart = new Chart(
+    document.getElementById("levelChart"),
+    {
+        type: "line",
+        data: {
+            labels: levelLabels,
+            datasets: [{
+                label: "Water Level (%)",
+                data: levelValues,
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    }
+);
+
+const consumptionChart = new Chart(
+    document.getElementById("consumptionChart"),
+    {
+        type: "bar",
+        data: {
+            labels: ["Today"],
+            datasets: [{
+                label: "Consumption (L)",
+                data: [0],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    }
+);
+
+async function updateAnalytics() {
+    try {
+        const response = await fetch("/api/status");
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch analytics");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("current-level").textContent =
+            data.tank_level + "%";
+
+        document.getElementById("current-volume").textContent =
+            data.water_volume + " L";
+
+        document.getElementById("current-flow").textContent =
+            data.flow_rate + " L/min";
+
+        document.getElementById("today-consumption").textContent =
+            data.consumption_today + " L";
+
+        const label = data.timestamp || new Date().toLocaleTimeString();
+
+        levelLabels.push(label);
+        levelValues.push(Number(data.tank_level) || 0);
+
+        if (levelLabels.length > 20) {
+            levelLabels.shift();
+            levelValues.shift();
+        }
+
+        levelChart.update();
+
+        consumptionChart.data.datasets[0].data = [
+            Number(data.consumption_today) || 0
+        ];
+
+        consumptionChart.update();
+
+    } catch (error) {
+        console.error("Analytics update failed:", error);
+    }
+}
+
+updateAnalytics();
+setInterval(updateAnalytics, 3000);
+</script>
+</body>
+</html>
