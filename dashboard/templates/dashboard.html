@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,115 +8,132 @@
 
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-    <!-- Sidebar -->
     <aside class="sidebar">
-
-        <h2>Smart Water</h2>
+        <h2>💧 Smart Water</h2>
 
         <nav>
-            <a href="#" class="active">Dashboard</a>
-            <a href="#">Tank</a>
-            <a href="#">Analytics</a>
-            <a href="#">Alerts</a>
-            <a href="#">Settings</a>
+            <a href="#overview" class="active">Dashboard</a>
+            <a href="#tank-section">Tank Monitor</a>
+            <a href="#analytics">Analytics</a>
+            <a href="#alerts-section">Alerts</a>
         </nav>
 
+        <div class="sidebar-footer">
+            IoT Monitoring System
+        </div>
     </aside>
 
-
-    <!-- Main Content -->
     <main class="main-content">
 
-        <!-- Header -->
         <header class="topbar">
-
             <div>
                 <h1>Smart Water Tank</h1>
                 <p>IoT Water Level & Leakage Controller</p>
             </div>
 
             <div class="connection-status">
-                <span class="status-dot"></span>
-                Online
+                <span class="status-dot" id="status-dot"></span>
+                <span id="connection-text">Connecting...</span>
             </div>
-
         </header>
 
+        <section id="overview" class="stats-grid">
 
-        <!-- Statistics -->
-        <section class="stats-grid">
-
-            <div class="card">
+            <div class="card stat-card">
+                <div class="stat-icon">💧</div>
                 <h3>Tank Level</h3>
                 <p class="value">
-                    <span id="tank-level">--</span>%
+                    <span id="tank-level">--</span><small>%</small>
                 </p>
+                <p class="subtext">Current water level</p>
             </div>
 
-            <div class="card">
+            <div class="card stat-card">
+                <div class="stat-icon">🪣</div>
                 <h3>Water Volume</h3>
                 <p class="value">
-                    <span id="water-volume">--</span> L
+                    <span id="water-volume">--</span><small> L</small>
                 </p>
+                <p class="subtext">Estimated water volume</p>
             </div>
 
-            <div class="card">
+            <div class="card stat-card">
+                <div class="stat-icon">⚡</div>
                 <h3>Flow Rate</h3>
                 <p class="value">
-                    <span id="flow-rate">--</span> L/min
+                    <span id="flow-rate">--</span><small> L/min</small>
                 </p>
+                <p class="subtext">Flow sensor required</p>
             </div>
 
-            <div class="card">
+            <div class="card stat-card">
+                <div class="stat-icon">📊</div>
                 <h3>Today's Consumption</h3>
                 <p class="value">
-                    <span id="consumption">--</span> L
+                    <span id="consumption">--</span><small> L</small>
                 </p>
+                <p class="subtext">Requires consumption tracking</p>
             </div>
 
         </section>
 
+        <section id="tank-section" class="dashboard-grid">
 
-        <!-- Tank and System Status -->
-        <section class="dashboard-grid">
-
-            <!-- Tank -->
-            <div class="card">
-
-                <h2>Tank Status</h2>
-
-                <div class="tank-container">
-
-                    <div class="tank">
-
-                        <div id="water"
-                             class="water"
-                             style="height: 76%;">
-                        </div>
-
+            <div class="card tank-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Tank Monitor</h2>
+                        <p>Live ultrasonic sensor readings</p>
                     </div>
-
-                    <h2>
-                        <span id="tank-percentage">76</span>%
-                    </h2>
-
+                    <span class="badge">27 cm Tank</span>
                 </div>
 
+                <div class="tank-container">
+                    <div class="tank">
+                        <div id="water" class="water"></div>
+                        <div class="tank-mark mark-100">100%</div>
+                        <div class="tank-mark mark-50">50%</div>
+                        <div class="tank-mark mark-0">0%</div>
+                    </div>
+
+                    <div class="tank-reading">
+                        <h2><span id="tank-percentage">--</span>%</h2>
+                        <p>Current Water Level</p>
+                        <p class="distance">
+                            Sensor Distance:
+                            <strong><span id="distance">--</span> cm</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="level-progress">
+                    <div class="progress-label">
+                        <span>Tank Capacity</span>
+                        <strong><span id="progress-text">0</span>%</strong>
+                    </div>
+                    <div class="progress-track">
+                        <div id="level-progress-bar"></div>
+                    </div>
+                </div>
             </div>
 
-
-            <!-- System Status -->
             <div class="card">
-
-                <h2>System Status</h2>
+                <div class="section-heading">
+                    <div>
+                        <h2>System Status</h2>
+                        <p>Controller and pump information</p>
+                    </div>
+                </div>
 
                 <div class="status-row">
-                    <span>Pump</span>
-                    <strong id="pump-status">ON</strong>
+                    <span>Water Pump</span>
+                    <strong id="pump-status" class="status-pill">--</strong>
                 </div>
 
                 <div class="status-row">
@@ -126,72 +142,78 @@
                 </div>
 
                 <div class="status-row">
-                    <span>Leakage</span>
-                    <strong id="leakage-status">NO</strong>
+                    <span>Leakage Status</span>
+                    <strong id="leakage-status">--</strong>
                 </div>
 
                 <div class="status-row">
-                    <span>Pump Runtime</span>
-                    <strong>
-                        <span id="pump-runtime">18</span> min
-                    </strong>
+                    <span>Controller</span>
+                    <strong>Arduino UNO R4 WiFi</strong>
                 </div>
 
+                <div class="status-row">
+                    <span>Last Sensor Update</span>
+                    <strong id="last-update">--</strong>
+                </div>
+
+                <div class="pump-indicator" id="pump-indicator">
+                    <span class="pump-light"></span>
+                    <span id="pump-message">Waiting for sensor data</span>
+                </div>
             </div>
 
         </section>
 
-
-        <!-- Charts -->
-        <section class="charts-grid">
+        <section id="analytics" class="charts-grid">
 
             <div class="card">
-
-                <h2>Tank Level History</h2>
+                <div class="section-heading">
+                    <div>
+                        <h2>Tank Level History</h2>
+                        <p>Recent sensor readings</p>
+                    </div>
+                </div>
 
                 <canvas id="tankChart"></canvas>
-
             </div>
-
 
             <div class="card">
-
-                <h2>Water Consumption</h2>
+                <div class="section-heading">
+                    <div>
+                        <h2>Water Consumption</h2>
+                        <p>Weekly consumption</p>
+                    </div>
+                </div>
 
                 <canvas id="consumptionChart"></canvas>
-
+                <p class="chart-note">
+                    Sample data until actual consumption tracking is implemented.
+                </p>
             </div>
 
         </section>
 
-
-        <!-- Alerts -->
-        <section class="card">
-
-            <h2>Recent Alerts</h2>
+        <section id="alerts-section" class="card alerts-card">
+            <div class="section-heading">
+                <div>
+                    <h2>System Alerts</h2>
+                    <p>Water level and system notifications</p>
+                </div>
+            </div>
 
             <div id="alerts">
-
-                <p>No active alerts.</p>
-
+                <p class="alert-item">Waiting for sensor data...</p>
             </div>
-
         </section>
 
-
         <footer>
-            Smart Water Tank IoT Project
+            <p>Smart Water Tank Level & Leakage Controller</p>
+            <p>Arduino UNO R4 WiFi | Flask | IoT Dashboard</p>
         </footer>
 
     </main>
 
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Our JavaScript -->
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 </body>
-
 </html>
