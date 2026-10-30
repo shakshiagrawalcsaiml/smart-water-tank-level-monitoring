@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts | Smart Water Tank</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .alert-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .alert-card, .alert-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+            margin-bottom: 15px;
+        }
+
+        .alert-item {
+            border-left: 5px solid #94a3b8;
+        }
+
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-item.danger {
+            border-left-color: #ef4444;
+        }
+
+        .alert-item.success {
+            border-left-color: #22c55e;
+        }
+
+        .alert-time {
+            color: #64748b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="main-content">
+
+    <header class="header">
+        <h1>System Alerts</h1>
+        <p>Water tank warnings and system notifications</p>
+    </header>
+
+    <section class="alert-summary">
+
+        <div class="alert-card">
+            <h3>Active Alerts</h3>
+            <h2 id="active-count">0</h2>
+        </div>
+
+        <div class="alert-card">
+            <h3>Water Level</h3>
+            <h2 id="alert-level">--%</h2>
+        </div>
+
+        <div class="alert-card">
+            <h3>Leakage Status</h3>
+            <h2 id="alert-leakage">Checking</h2>
+        </div>
+
+    </section>
+
+    <section class="alert-card">
+        <h2>Current Notifications</h2>
+        <div id="alerts-list">
+            <p>Loading alerts...</p>
+        </div>
+    </section>
+
+    <p>
+        <a href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
+    </p>
+
+</div>
+
+<script>
+async function updateAlerts() {
+    const list = document.getElementById("alerts-list");
+
+    try {
+        const response = await fetch("/api/status");
+
+        if (!response.ok) {
+            throw new Error("Unable to fetch alert status");
+        }
+
+        const data = await response.json();
+        const level = Number(data.tank_level) || 0;
+        const alerts = [];
+
+        document.getElementById("alert-level").textContent =
+            level + "%";
+
+        document.getElementById("alert-leakage").textContent =
+            data.leakage ? "LEAK DETECTED" : "No Leakage";
+
+        if (!data.sensor_connected) {
+            alerts.push({
+                type: "warning",
+                title: "Arduino Not Connected",
+                message: "Waiting for sensor data from Arduino."
+            });
+        }
+
+        if (data.leakage) {
+            alerts.push({
+                type: "danger",
+                title: "Water Leakage Detected",
+                message: "Check the tank, pipes and connections immediately."
+            });
+        }
+
+        if (level <= 20) {
+            alerts.push({
+                type: "warning",
+                title: "Low Water Level",
+                message: "Water level is at or below 20%."
+            });
+        }
+
+        if (level >= 90) {
+            alerts.push({
+                type: "warning",
+                title: "Tank Almost Full",
+                message: "Water level is at or above 90%."
+            });
+        }
+
+        if (data.sensor_connected && !data.leakage &&
+            level > 20 && level < 90) {
+            alerts.push({
+                type: "success",
+                title: "System Normal",
+                message: "No current water-level or leakage warning."
+            });
+        }
+
+        document.getElementById("active-count").textContent =
+            alerts.filter(alert => alert.type !== "success").length;
+
+        list.innerHTML = "";
+
+        alerts.forEach(alert => {
+            const item = document.createElement("div");
+            item.className = "alert-item " + alert.type;
+
+            const title = document.createElement("h3");
+            title.textContent = alert.title;
+
+            const message = document.createElement("p");
+            message.textContent = alert.message;
+
+            const time = document.createElement("p");
+            time.className = "alert-time";
+            time.textContent = "Last checked: " +
+                (data.timestamp || "--");
+
+            item.append(title, message, time);
+            list.appendChild(item);
+        });
+
+    } catch (error) {
+        list.textContent = "Unable to load alerts. Check the Flask server.";
+        console.error("Alert update failed:", error);
+    }
+}
+
+updateAlerts();
+setInterval(updateAlerts, 3000);
+</script>
+</body>
+</html>
